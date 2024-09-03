@@ -1,0 +1,241 @@
+\documentclass[12pt]{report}%  change 11pt to 10pt (smaller size) or 12pt (larger)
+\usepackage[export]{adjustbox}  %inluding graphics to right/left/center
+\usepackage{fullpage, setspace, verbatim, graphicx}
+\usepackage{amsmath, amsfonts, amssymb, commath}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{colortbl}        %color table 
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage[T1]{fontenc}
+\usepackage{float} %figure%
+%\usepackage{mathptmx}
+\usepackage{bm, ulem, framed, cancel} %\uuline \uwave
+\usepackage[top=1.0in, bottom=1.0in, left=1.0in, right=1.0in]{geometry} 
+\usepackage{amsthm} %proof %theoremstyle
+\usepackage{listings}
+\usepackage{soul} % strikethrough
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage[notransparent]{svg}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+%\graphicspath{ {./Figures/RViz images/} }
+\graphicspath{ {./Figures/} }
+
+\definecolor{umbcBrown} {rgb}{0.651, 0.478, 0.019}
+\definecolor{umbcGray}  {rgb}{0.780, 0.784, 0.792}
+\definecolor{umbcGold}  {rgb}{0.99215, 0.70970, 0.08235}
+\definecolor{umbcTeal}  {rgb}{0.000, 0.443, 0.462}
+\definecolor{umbcRed}   {rgb}{0.854, 0.129, 0.157}
+\definecolor{gwuBlue}   {rgb}{0.000, 0.251, 0.396}
+\definecolor{gwuGold}   {rgb}{0.784, 0.694, 0.545}
+\definecolor{myGreen}   {rgb}{0.000, 0.600, 0.000}
+\definecolor{myGray}    {rgb}{0.500, 0.500, 0.500}
+% ------------------- set header information for pages after the first --------
+\newcommand{\al}     {\alpha}
+\newcommand{\be}     {\beta}
+\newcommand{\ar}     {\quad\Longrightarrow\quad}
+\newcommand{\clr}    {\color}
+\newcommand{\diag}   {\text{diag}}
+\newcommand{\dau}    {\dashuline}
+\newcommand{\dou}    {\dotuline}
+\newcommand{\foot}   {\footnotesize}
+\newcommand{\tc}     {\textcolor}
+\newcommand{\tcbl}    {\textcolor{blue}}
+\newcommand{\tcr}    {\textcolor{umbcRed}}
+\newcommand{\tcp}    {\textcolor{purple}}
+\newcommand{\tcgn}   {\textcolor{OlliveGreen}}
+\newcommand{\tcgy}   {\textcolor{myGray}}
+\newcommand{\tcn}    {\textcolor{umbcBrown}}
+\newcommand{\tct}    {\textcolor{umbcTeal}}
+\newcommand{\tr}     {\mathrm{tr}}
+\newcommand{\no}     {\nonumber}
+\newcommand{\Sph}    {\ensuremath{\mathsf{S}}}
+\newcommand{\T}      {\ensuremath{\mathsf{T}}}
+\renewcommand{\t}    {{\times}}
+\newcommand{\I}      {\ensuremath{\mathbf{I}}}
+\newcommand{\e}      {\ensuremath{\mathbf{e}}}
+\newcommand{\n}      {\ensuremath{\mathbf{n}}}
+\newcommand{\p}      {\ensuremath{\partial}}
+\newcommand{\refeqn}[1]{(\ref{eq:#1})}
+\renewcommand{\Re}   {\ensuremath{\mathbb{R}}}
+\newcommand{\w}      {{\omega}}
+\newcommand{\W}      {{\Omega}}
+\newcommand{\V}      {\mathcal{V}}
+\newcommand{\U}      {\mathcal{U}}
+\theoremstyle{definition}  %no itlaic in new-theorem 
+\newtheorem{Theorem}{Theorem}
+\newtheorem{Ex}{Example}
+\newtheorem{Case}{Case}
+
+%\titleformat{\chapter}[hang]{\huge\bfseries}{\chaptertitlename~\thechapter }{1em}{}[]
+%\titlespacing*{\chapter}{0pt}{-20pt}{20Pt}
+
+\titleformat{\chapter}      [hang]{\Large\bfseries\center}{\chaptertitlename~\thechapter}{1em}{}[]
+\titleformat{\section}      [hang]{\large\bfseries}{\thesection}{1ex}{}[]
+\titleformat{\subsection}   [hang]{\bfseries}{\thesubsection}{1ex}{}[]
+\titleformat{\subsubsection}[hang]{\small\bfseries}{\thesubsubsection}{1ex}{}[]
+\titleformat{\paragraph}    [runin]{\bfseries}{\theparagraph}{1em}{}
+
+%\pagestyle{fancy}
+%\fancyhf{}
+%\lhead{\fontfamily{phv}\small{Roy Tsehuai Wu}}
+%\rhead{\fontfamily{phv}\normalsize{C++ Notes}}
+%\cfoot{\fontfamily{phv}\normalsize\thepage}
+%%\lfoot{\footnotesize{Last updated at \today}}
+
+% ----- defining tip environment -----
+\newenvironment{tips}
+{
+	\vspace{-4ex}
+	\begin{flushleft}
+		\renewcommand{\arraystretch}{1.4}
+		\begin{tabular}{m{3em} m{35em}}
+			\\\cline{2-2}
+			\raisebox{-.5\height}{\includegraphics[height=0.46in]{idea.png}} & \textbf{TIPS:}
+		}
+		{
+			\\\cline{2-2}
+		\end{tabular}
+	\end{flushleft}
+	\vspace{1ex}
+}
+%----- ----- ----- ----- ----- ----- -----
+%----- ----- ----- ----- ----- ----- -----
+\newenvironment{info}
+{
+	\vspace{-3ex}
+	\begin{flushleft}
+		\renewcommand{\arraystretch}{1.4}
+		\begin{tabular}{m{3em} m{35em}}
+			\\\cline{2-2}
+			\raisebox{-.5\height}{\includegraphics[height=0.45in]{register.png}} & \textbf{Info:}
+		}
+		{
+			\\\cline{2-2}
+		\end{tabular}
+	\end{flushleft}
+}
+%----- ----- ----- ----- ----- ----- -----
+%----- ----- ----- ----- ----- ----- -----
+\newenvironment{caution}
+{
+	\vspace{-3ex}
+	\begin{flushleft}
+		\renewcommand{\arraystretch}{1.4}
+		\begin{tabular}{m{3em} m{35em}}
+			\\\cline{2-2}
+			\raisebox{-.5\height}{\includegraphics[height=0.45in]{danger.png}} & \textbf{CAUTION:}
+		}
+		{
+			\\\cline{2-2}
+		\end{tabular}
+	\end{flushleft}
+}
+%----- ----- ----- ----- ----- ----- -----
+
+
+%----- listings -----
+\lstset{
+	basicstyle       = \scriptsize,        % the size of the fonts that are used for the code
+	tabsize          = 2,                  % sets default tabsize to 1 spaces
+	breaklines       = true,               % sets automatic line breaking  
+	showstringspaces = false,              % underline spaces within strings only
+	%language         = matlab,             % language of the code
+	keywordstyle     = \clr{purple},       % keyword style
+	frame            = single,	           % adds a frame around the code
+	framerule        = 0.3mm,              % frame thickness
+	frameround       = ffff,               % f=square corner, t=round corner (clockwise)
+	rulecolor        = \clr{blue!52},      % assign frame color
+	xleftmargin      = 3.4pt,              % leave room for the frame
+	xrightmargin     = 3.4pt,              % leave room for the frame
+	commentstyle     = \clr{myGreen},      % comment style
+	numbers          = right,              % where to put the line-numbers: left, right, none
+	numbersep        = -10pt,              % how far the line-numbers are from the code
+	numberstyle      = \foot\clr{myGray},  % the style that is used for the line-numbers
+	%	autogobble       = true,               % aitogobble to elimiate extra blank line
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{\Large{Computer Vision Note}}
+\author{}
+
+
+\begin{document}\maketitle
+%\pagestyle{empty}%  so first page will have no header or page number
+\pagebreak
+%----- set font to helvetica -----
+\fontfamily{phv}\selectfont	
+\frenchspacing
+\fontfamily{phv}
+
+%--------------------------------------------------------------------------------------------
+%--------------------------------------------------------------------------------------------
+\tableofcontents
+\pagebreak
+%--------------------------------------------------------------------------------------------
+\chapter{Computer Vision}
+
+\section{Learning Resources}
+\hspace{\parindent}\href{https://www.youtube.com/@firstprinciplesofcomputerv3258/playlists}{First Principles of Computer Vision} and \href{https://www.udacity.com/course/introduction-to-computer-vision--ud810?autoenroll=true}{Introduction to Computer Vision} are good places to start. The former one introduces mathematics that governs a certain idea and then develops the algorithm and its implementation in discrete space with adequate proofs and derivations while the latter one provides brief mathematical idea about the algorithms and provides some exercise and quizzes to test the knowledge. I would recommend starting with the latter one and watching some videos from the former one to get more idea about the proof of the algorithm.
+%--------------------------------------------------------------------------------------------
+
+
+%--------------------------------------------------------------------------------------------
+\section{Image Processing}
+\hspace{\parindent}We will use \href{https://en.wikipedia.org/wiki/Grayscale}{grayscaled image} for our works. The idea can be expanded to RBG images as well. Image (or image intensity) is basically a function of (x, y). Grayscale image can be obtained by some transformation (or function) applied on the pixel.
+
+\subsection{Filters}
+\hspace{\parindent}Filters are used to modify an image and extract features from image. We will be using \href{https://www.youtube.com/watch?v=ctn4MKATJOs&t=3s}{convolution filters}. Convolution is a \href{https://www.youtube.com/watch?v=Ma0YONjMZLI}{cross-correlation} but with the function first reflected about y-axis. Convolution is linear and shift invariant operation (or system). Often, we won't know what we the input function is being convolved with. So, if we want to know the function that the input convolutes with, then we can pass in unit impulse function to convolute with the unknown function. The resulting function will be the unknown function. Thhrefore, we get to know the previously unknown convolution function.
+
+The convolution operation over 2D-discrete functions can be implemented using matrices called convolution masks/kernel/filter represented by $h$ in \ref{eqn:2DDiscreteConvolution}.
+
+\begin{equation}
+g[i,j]=\sum_{m=1} ^{M}\sum_{n=1} ^{N} f[m,n]h[i-m, j-n]
+\label{eqn:2DDiscreteConvolution}
+\end{equation}
+
+Image functions/matrices are the inputs and we convolute them with the kernel matrices. Box, fuzzy, gaussian (which is also fuzzy but is standerd or formalized) filters are applied using convolution. Gaussian filters can be sepearted such that the convolution time complexity can be minimized.
+
+In general, this is the roadmap that led to matrix filters: we were motivated to modify images which led to the start of developing convolution filters. We started learning the 1D continuous convolution filter and then developed 2D discrete convolution filter. In 2D, the discrete convolution filter is a matrix. Also, in 1D discrete system, the filter would be an array.
+%--------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------
+\subsection{Edge Detection}
+\hspace{\parindent}We'll develop a Canny Edge detector which is a very popular algorithm to find the edges in an image. The first thing is to blur the image (yep the grayscale image) to reduce noise in the image. This is also a type of ``modification'' of image which is also done using convolution. The amount of blur will definitely impact the edge detection and blurring can be modified to our need. We'll use Gaussian blur as we assumed the noise is random and in such case Gaussian blur will perform the best. \textbf{gaussian\_filter($\sigma$)} function will take in the standard deviation as the input and return the Gaussian kernel. Size of the kernel $\approx 2\pi\sigma$. \textbf{convolution(f, h)} will take matrix \textbf{f} and convolute with another input matrix \textbf{h} and return the resulting matrix. An alternative to Gaussian filter could be a fuzzy filter.
+
+The next step is to calculate the image gradient magnitude and direction. Sobel kernel could be used to get the first derivative of the image in horizontal and vertical directions. Sobel operation is also an edge detection method in itself. The kernel is convolved with the image which was obtained after filtering.
+
+\begin{equation}
+\nabla_x = \frac{1}{8}
+\begin{bmatrix}
+-1 & 0 & 1\\
+-2 & 0 & 2\\
+-1 & 0 & 1
+\end{bmatrix},\;\;
+\nabla_y = \frac{1}{8}
+\begin{bmatrix}
+-1 & -2  & -1\\
+ 0 &  0  &  0\\
+ 1 &  2  &  1\\
+\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+\nabla_{mag} = \sqrt{\nabla_x^{2} + \nabla_y^{2}},\;\;
+\nabla_{dir} = \arctan2(\nabla_y, \nabla_x)
+\end{equation}
+
+Gradient images don't have sharp or thin edges. So the next step is to find the local maximum pixel value in the direction of the gradient. A full scan of the image has to be performed. The local maximum will be kept as a possible edge and other pixels are zeroed. This is called non-maximum suppression method. 1D laplacian operator in the gradient direction could be implemented as well to get the local maximum from a sharp zero crossing. We will use a naive method of comparing the neighboring pixels rather.
+
+After the non-maximum suppression, hysteresis thresholding is applied. 2 threshold values are chosen. If a pixel is above the higher one, the pixel is marked as a strong edge, and if it is below the lower value, the pixel is marked as not an edge. If the pixel is in between the threshold values, then it gets marked as a weak edge. Finally, if the weak edge is connected to a strong edge, then the weak edge is marked to be a strong edge as well. Marking the weak edge to a strong edge will help connect the weak edges which were at the neighborhood of the newly marked strong edge. After a full scan, the strong edges are considered as definite edge. This is what the algorithm outputs as the edge in an image.
+%--------------------------------------------------------------------------------------------
+\end{document}
