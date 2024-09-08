@@ -1,188 +1,43 @@
-\documentclass[12pt]{report}%  change 11pt to 10pt (smaller size) or 12pt (larger)
-\usepackage[export]{adjustbox}  %inluding graphics to right/left/center
-\usepackage{fullpage, setspace, verbatim, graphicx}
-\usepackage{amsmath, amsfonts, amssymb, commath}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage{colortbl}        %color table 
-\usepackage{enumerate}
-\usepackage{fancyhdr}
-\usepackage[T1]{fontenc}
-\usepackage{float} %figure%
-%\usepackage{mathptmx}
-\usepackage{bm, ulem, framed, cancel} %\uuline \uwave
-\usepackage[top=1.0in, bottom=1.0in, left=1.0in, right=1.0in]{geometry} 
-\usepackage{amsthm} %proof %theoremstyle
-\usepackage{listings}
-\usepackage{soul} % strikethrough
-\usepackage{tabularx}
-\usepackage{hyperref}
-\usepackage{titlesec}
-\usepackage{xcolor}
-\usepackage{hyperref}
-\usepackage{graphicx}
-\usepackage[notransparent]{svg}
-\usepackage{xcolor}
-\usepackage{algorithm}
-\usepackage{algorithmic}
+\documentclass{report}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage[a4paper, total={6in, 10in}]{geometry}
+
+\usepackage{graphicx} % Required for inserting images
 \usepackage{amsmath}
-%\graphicspath{ {./Figures/RViz images/} }
-\graphicspath{ {./Figures/} }
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{subfigure}
+\usepackage{tikz}
 
-\definecolor{umbcBrown} {rgb}{0.651, 0.478, 0.019}
-\definecolor{umbcGray}  {rgb}{0.780, 0.784, 0.792}
-\definecolor{umbcGold}  {rgb}{0.99215, 0.70970, 0.08235}
-\definecolor{umbcTeal}  {rgb}{0.000, 0.443, 0.462}
-\definecolor{umbcRed}   {rgb}{0.854, 0.129, 0.157}
-\definecolor{gwuBlue}   {rgb}{0.000, 0.251, 0.396}
-\definecolor{gwuGold}   {rgb}{0.784, 0.694, 0.545}
-\definecolor{myGreen}   {rgb}{0.000, 0.600, 0.000}
-\definecolor{myGray}    {rgb}{0.500, 0.500, 0.500}
-% ------------------- set header information for pages after the first --------
-\newcommand{\al}     {\alpha}
-\newcommand{\be}     {\beta}
-\newcommand{\ar}     {\quad\Longrightarrow\quad}
-\newcommand{\clr}    {\color}
-\newcommand{\diag}   {\text{diag}}
-\newcommand{\dau}    {\dashuline}
-\newcommand{\dou}    {\dotuline}
-\newcommand{\foot}   {\footnotesize}
-\newcommand{\tc}     {\textcolor}
-\newcommand{\tcbl}    {\textcolor{blue}}
-\newcommand{\tcr}    {\textcolor{umbcRed}}
-\newcommand{\tcp}    {\textcolor{purple}}
-\newcommand{\tcgn}   {\textcolor{OlliveGreen}}
-\newcommand{\tcgy}   {\textcolor{myGray}}
-\newcommand{\tcn}    {\textcolor{umbcBrown}}
-\newcommand{\tct}    {\textcolor{umbcTeal}}
-\newcommand{\tr}     {\mathrm{tr}}
-\newcommand{\no}     {\nonumber}
-\newcommand{\Sph}    {\ensuremath{\mathsf{S}}}
-\newcommand{\T}      {\ensuremath{\mathsf{T}}}
-\renewcommand{\t}    {{\times}}
-\newcommand{\I}      {\ensuremath{\mathbf{I}}}
-\newcommand{\e}      {\ensuremath{\mathbf{e}}}
-\newcommand{\n}      {\ensuremath{\mathbf{n}}}
-\newcommand{\p}      {\ensuremath{\partial}}
-\newcommand{\refeqn}[1]{(\ref{eq:#1})}
-\renewcommand{\Re}   {\ensuremath{\mathbb{R}}}
-\newcommand{\w}      {{\omega}}
-\newcommand{\W}      {{\Omega}}
-\newcommand{\V}      {\mathcal{V}}
-\newcommand{\U}      {\mathcal{U}}
-\theoremstyle{definition}  %no itlaic in new-theorem 
-\newtheorem{Theorem}{Theorem}
-\newtheorem{Ex}{Example}
-\newtheorem{Case}{Case}
-
-%\titleformat{\chapter}[hang]{\huge\bfseries}{\chaptertitlename~\thechapter }{1em}{}[]
-%\titlespacing*{\chapter}{0pt}{-20pt}{20Pt}
-
-\titleformat{\chapter}      [hang]{\Large\bfseries\center}{\chaptertitlename~\thechapter}{1em}{}[]
-\titleformat{\section}      [hang]{\large\bfseries}{\thesection}{1ex}{}[]
-\titleformat{\subsection}   [hang]{\bfseries}{\thesubsection}{1ex}{}[]
-\titleformat{\subsubsection}[hang]{\small\bfseries}{\thesubsubsection}{1ex}{}[]
-\titleformat{\paragraph}    [runin]{\bfseries}{\theparagraph}{1em}{}
-
-%\pagestyle{fancy}
-%\fancyhf{}
-%\lhead{\fontfamily{phv}\small{Roy Tsehuai Wu}}
-%\rhead{\fontfamily{phv}\normalsize{C++ Notes}}
-%\cfoot{\fontfamily{phv}\normalsize\thepage}
-%%\lfoot{\footnotesize{Last updated at \today}}
-
-% ----- defining tip environment -----
-\newenvironment{tips}
-{
-	\vspace{-4ex}
-	\begin{flushleft}
-		\renewcommand{\arraystretch}{1.4}
-		\begin{tabular}{m{3em} m{35em}}
-			\\\cline{2-2}
-			\raisebox{-.5\height}{\includegraphics[height=0.46in]{idea.png}} & \textbf{TIPS:}
-		}
-		{
-			\\\cline{2-2}
-		\end{tabular}
-	\end{flushleft}
-	\vspace{1ex}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdfpagemode=FullScreen,
 }
-%----- ----- ----- ----- ----- ----- -----
-%----- ----- ----- ----- ----- ----- -----
-\newenvironment{info}
-{
-	\vspace{-3ex}
-	\begin{flushleft}
-		\renewcommand{\arraystretch}{1.4}
-		\begin{tabular}{m{3em} m{35em}}
-			\\\cline{2-2}
-			\raisebox{-.5\height}{\includegraphics[height=0.45in]{register.png}} & \textbf{Info:}
-		}
-		{
-			\\\cline{2-2}
-		\end{tabular}
-	\end{flushleft}
-}
-%----- ----- ----- ----- ----- ----- -----
-%----- ----- ----- ----- ----- ----- -----
-\newenvironment{caution}
-{
-	\vspace{-3ex}
-	\begin{flushleft}
-		\renewcommand{\arraystretch}{1.4}
-		\begin{tabular}{m{3em} m{35em}}
-			\\\cline{2-2}
-			\raisebox{-.5\height}{\includegraphics[height=0.45in]{danger.png}} & \textbf{CAUTION:}
-		}
-		{
-			\\\cline{2-2}
-		\end{tabular}
-	\end{flushleft}
-}
-%----- ----- ----- ----- ----- ----- -----
 
+\renewcommand{\Re}{\mathbb{R}}
 
-%----- listings -----
-\lstset{
-	basicstyle       = \scriptsize,        % the size of the fonts that are used for the code
-	tabsize          = 2,                  % sets default tabsize to 1 spaces
-	breaklines       = true,               % sets automatic line breaking  
-	showstringspaces = false,              % underline spaces within strings only
-	%language         = matlab,             % language of the code
-	keywordstyle     = \clr{purple},       % keyword style
-	frame            = single,	           % adds a frame around the code
-	framerule        = 0.3mm,              % frame thickness
-	frameround       = ffff,               % f=square corner, t=round corner (clockwise)
-	rulecolor        = \clr{blue!52},      % assign frame color
-	xleftmargin      = 3.4pt,              % leave room for the frame
-	xrightmargin     = 3.4pt,              % leave room for the frame
-	commentstyle     = \clr{myGreen},      % comment style
-	numbers          = right,              % where to put the line-numbers: left, right, none
-	numbersep        = -10pt,              % how far the line-numbers are from the code
-	numberstyle      = \foot\clr{myGray},  % the style that is used for the line-numbers
-	%	autogobble       = true,               % aitogobble to elimiate extra blank line
-}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \title{\Large{Computer Vision Note}}
-\author{}
+\author{Sagar Ojha}
 
 
-\begin{document}\maketitle
-%\pagestyle{empty}%  so first page will have no header or page number
+\begin{document}
+\maketitle
 \pagebreak
-%----- set font to helvetica -----
-\fontfamily{phv}\selectfont	
-\frenchspacing
-\fontfamily{phv}
 
 %--------------------------------------------------------------------------------------------
 %--------------------------------------------------------------------------------------------
 \tableofcontents
 \pagebreak
 %--------------------------------------------------------------------------------------------
-\chapter{Computer Vision}
+\chapter{Basic Computer Vision}
 
 \section{Learning Resources}
 \hspace{\parindent}\href{https://www.youtube.com/@firstprinciplesofcomputerv3258/playlists}{First Principles of Computer Vision} and \href{https://www.udacity.com/course/introduction-to-computer-vision--ud810?autoenroll=true}{Introduction to Computer Vision} are good places to start. The former one introduces mathematics that governs a certain idea and then develops the algorithm and its implementation in discrete space with adequate proofs and derivations while the latter one provides brief mathematical idea about the algorithms and provides some exercise and quizzes to test the knowledge. I would recommend starting with the latter one and watching some videos from the former one to get more idea about the proof of the algorithm.
@@ -203,9 +58,9 @@ g[i,j]=\sum_{m=1} ^{M}\sum_{n=1} ^{N} f[m,n]h[i-m, j-n]
 \label{eqn:2DDiscreteConvolution}
 \end{equation}
 
-Image functions/matrices are the inputs and we convolute them with the kernel matrices. Box, fuzzy, gaussian (which is also fuzzy but is standerd or formalized) filters are applied using convolution. Gaussian filters can be sepearted such that the convolution time complexity can be minimized.
+Image functions/matrices are the inputs and we convolute them with the kernel matrices. Box, fuzzy, gaussian (which is also fuzzy but is standard or formalized) filters are applied using convolution. Gaussian filters can be separated such that the convolution time complexity can be minimized.
 
-In general, this is the roadmap that led to matrix filters: we were motivated to modify images which led to the start of developing convolution filters. We started learning the 1D continuous convolution filter and then developed 2D discrete convolution filter. In 2D, the discrete convolution filter is a matrix. Also, in 1D discrete system, the filter would be an array.
+In general, this is the roadmap that led to matrix filters: we were motivated to modify images which led to the start of developing convolution filters. We started learning the 1D continuous convolution filter and then developed 2D discrete convolution filter. In 2D, the discrete convolution filter is implemented using a matrix. Also, in 1D discrete system, the filter would be realized using an array.
 %--------------------------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------------------------
@@ -236,6 +91,70 @@ The next step is to calculate the image gradient magnitude and direction. Sobel 
 
 Gradient images don't have sharp or thin edges. So the next step is to find the local maximum pixel value in the direction of the gradient. A full scan of the image has to be performed. The local maximum will be kept as a possible edge and other pixels are zeroed. This is called non-maximum suppression method. 1D laplacian operator in the gradient direction could be implemented as well to get the local maximum from a sharp zero crossing. We will use a naive method of comparing the neighboring pixels rather.
 
-After the non-maximum suppression, hysteresis thresholding is applied. 2 threshold values are chosen. If a pixel is above the higher one, the pixel is marked as a strong edge, and if it is below the lower value, the pixel is marked as not an edge. If the pixel is in between the threshold values, then it gets marked as a weak edge. Finally, if the weak edge is connected to a strong edge, then the weak edge is marked to be a strong edge as well. Marking the weak edge to a strong edge will help connect the weak edges which were at the neighborhood of the newly marked strong edge. After a full scan, the strong edges are considered as definite edge. This is what the algorithm outputs as the edge in an image.
+After the non-maximum suppression, hysteresis thresholding is applied. $2$ threshold values are chosen. If a pixel is above the higher one, the pixel is marked as a strong edge, and if it is below the lower value, the pixel is marked as not an edge. If the pixel is in between the threshold values, then it gets marked as a weak edge. Finally, if the weak edge is connected to a strong edge, then the weak edge is marked to be a strong edge as well; marking the weak edge to a strong edge will help connect the weak edges which were at the neighborhood of the newly marked strong edge. After a full scan, the strong edges are considered as definite edge. This is what the algorithm outputs as the edge in an image.
 %--------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------
+\section{Hough Transform}
+\subsection{Detecting Lines}
+\hspace{\parindent}Lines represented as 
+\begin{align}
+	y = mx + c
+	\label{eqn:StraightLine}
+\end{align}
+can be parametrized as
+\begin{align}
+	x \cos{\theta} + y \sin{\theta} = \rho
+	\label{eqn:SinusoidParameterizedLine}
+\end{align}
+where $\rho$ is the perpendicular distance from the origin to the line and $\theta$ is the angle that the perpendicular line to Eq.~\ref{eqn:StraightLine} makes with the horizontal axis. In the \textit{Hough} space, a point $(x,y)$ is represented as a sinusoid given by Eq.~\ref{eqn:SinusoidParameterizedLine}.
+
+In order to derive the parameterized representation in Eq.~\ref{eqn:SinusoidParameterizedLine}, consider a unit vector $[ \cos{\theta} \; \sin{\theta} ]^\text{T}$ pointed towards the point $(x, y)$ and the vector $[x \; y]^{\text{T}}$ whose tail is the origin and the head is at $(x,y)$ with the magnitude of $\rho$. Using the dot product, one gets
+\begin{align}
+	\begin{bmatrix}
+		\cos{\theta} \\
+		\sin{\theta}
+	\end{bmatrix}
+	\cdot
+	\begin{bmatrix}
+		x \\
+		y
+	\end{bmatrix}
+	& = \rho, \\
+	x \cos{\theta} + y \sin{\theta} & = \rho.
+	\label{eqn:SinusoidParameterizedLineDerivation}
+\end{align}
+
+% Hough transform plot
+%\begin{figure}[h]
+%\centering
+%\begin{tikzpicture}
+%	% Axes Left
+%	\draw [->, very thick] (-5cm, 0cm) -- (-5cm, 4cm);
+%	\draw [->, very thick] (-5cm, 0cm) -- (-1cm, 0cm);
+%	
+%	% Line
+%	\draw [-, very thick, blue] (-5cm, 3cm) -- (-2cm, 0cm);
+%	\node at () [] {$$};
+%	
+%	% Axes Right
+%	\node at (0cm,0cm) [circle, draw=red!50, fill=red!5, very thick, minimum size=1.5cm]{$a = g(\vec w \cdot \vec x + b)$};
+%	\draw [->, very thick] (1.4cm, 0cm) -- (5cm, 0cm);
+%	\node at (5.2cm, 0cm)[]{$a$};
+%\end{tikzpicture}
+%\caption{Parameteric representation of point and line.}
+%\label{fig:Houghtransform}
+%\end{figure}
+
+Considering the origin of the image at the lower-bottom part, the the image can be swept across with $0^{\circ} \leq \theta \leq 90^{\circ}$ and $0 \leq \rho \leq \ell$ where $\ell$ represents the diagonal length of the image; diagonal length of the image can be considered as the number of pixels along the image diagonal fo the implementation. Create an accumulator bin/matrix of appropriate size depending on the resolution as well as range of both $\theta$ and $\rho$. Then, collect the votes from each \textbf{edge points}. The cells with the largest votes represents the parameters of the line that the edges correspond to. One may draw the line using the parameters. I think the overall implementation would be extremely expensive.
+
+
+
+\subsection{Detecting Circles}
+
+
+
+%--------------------------------------------------------------------------------------------
+
+
 \end{document}
