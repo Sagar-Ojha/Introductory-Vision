@@ -74,7 +74,7 @@ def convolution(mat1, mat2):
 def gradient(filter_x, filter_y, original_image):
     filter_size = len(filter_x) # Need to have same filter size for both x and y gradients
     image = copy_boundary(original_image, int(filter_size / 2))
-    gradient_image = np.zeros((len(original_image), len(original_image[0]), 2),dtype=np.uint8)
+    gradient_image = np.zeros((len(original_image), len(original_image[0])),dtype=np.uint8)
     grad_x = np.zeros((len(image), len(image[0])),dtype=np.float32)
     grad_y = np.zeros((len(image), len(image[0])),dtype=np.float32)
 
@@ -86,10 +86,8 @@ def gradient(filter_x, filter_y, original_image):
             grad_y[i][j] = convolution(filter_y, \
                         image[(i - int(filter_size / 2)): (i + int(filter_size / 2) + 1),\
                               (j - int(filter_size / 2)): (j + int(filter_size / 2) + 1)])
-            gradient_image[i-int(filter_size/2)][j-int(filter_size/2)][0] = \
+            gradient_image[i-int(filter_size/2)][j-int(filter_size/2)] = \
                 int(np.sqrt((grad_x[i][j])**2 + (grad_y[i][j])**2))
-            gradient_image[i-int(filter_size/2)][j-int(filter_size/2)][1] = \
-                int(np.arctan2(grad_y[i][j], grad_x[i][j]))
 
     return gradient_image
 #===================================================================
@@ -112,7 +110,7 @@ if __name__ == "__main__":
 
     gradient_image = gradient(sobel_filter_x, sobel_filter_y, blurred_img)
     cv2.imshow('Blurred Image', cv2.resize(blurred_img, (550, 550)))
-    cv2.imshow('Gradient Image', cv2.resize(gradient_image[:,:,0], (550, 550)))
+    cv2.imshow('Gradient Image', cv2.resize(gradient_image, (550, 550)))
 
     # print(len(blurred_mat), len(blurred_mat[0]))
     # print(len(chess_grayscale), len(chess_grayscale[0]))
