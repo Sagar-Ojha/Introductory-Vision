@@ -109,7 +109,7 @@ can be parametrized as
 \end{align}
 where $\rho$ is the perpendicular distance from the origin to the line and $\theta$ is the angle that the perpendicular line to Eq.~\ref{eqn:StraightLine} makes with the horizontal axis. In the \textit{Hough} space, a point $(x,y)$ is represented as a sinusoid given by Eq.~\ref{eqn:SinusoidParameterizedLine}.
 
-In order to derive the parameterized representation in Eq.~\ref{eqn:SinusoidParameterizedLine}, consider a unit vector $[ \cos{\theta} \; \sin{\theta} ]^\text{T}$ pointed towards the point $(x, y)$ and the vector $[x \; y]^{\text{T}}$ whose tail is the origin and the head is at $(x,y)$ with the magnitude of $\rho$. Using the dot product, one gets
+In order to derive the parameterized representation in Eq.~\ref{eqn:SinusoidParameterizedLine}, consider a unit vector $[ \cos{\theta} \; \sin{\theta} ]^\text{T}$ and the vector $[x \; y]^{\text{T}}$ whose tail is the origin and the head is at $(x,y)$ with the magnitude of $\rho$. Projecting $[x \; y]^{\text{T}}$ onto $[ \cos{\theta} \; \sin{\theta} ]^\text{T}$, one gets
 \begin{align}
 	\begin{bmatrix}
 		\cos{\theta} \\
