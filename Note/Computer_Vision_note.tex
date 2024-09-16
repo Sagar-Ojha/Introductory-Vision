@@ -146,11 +146,13 @@ In order to derive the parameterized representation in Eq.~\ref{eqn:SinusoidPara
 %\label{fig:Houghtransform}
 %\end{figure}
 
-Considering the origin of the image at the lower-bottom part, the the image can be swept across with $0^{\circ} \leq \theta \leq 90^{\circ}$ and $0 \leq \rho \leq \ell$ where $\ell$ represents the diagonal length of the image; diagonal length of the image can be considered as the number of pixels along the image diagonal fo the implementation. Create an accumulator bin/matrix of appropriate size depending on the resolution as well as range of both $\theta$ and $\rho$. Then, collect the votes from each \textbf{edge points}. The cells with the largest votes represents the parameters of the line that the edges correspond to. One may draw the line using the parameters. I think the overall implementation would be extremely expensive.
+Considering the origin of the image at the lower-bottom part, the image can be swept across with $0^{\circ} \leq \theta \leq 360^{\circ}$ and $0 \leq \rho \leq \ell$ where $\ell$ represents the diagonal length of the image; diagonal length of the image can be considered as the number of pixels along the image diagonal for the implementation. Create an accumulator bin/matrix of appropriate size depending on the resolution as well as range of both $\theta$ and $\rho$. Then, collect the votes from each \textbf{edge points}. The cells with the largest votes represents the parameters of the line that the edges correspond to. One may draw the line using the parameters.
 
 
+\subsection{Detecting Shapes}
+\hspace{\parindent}Prior to running the detection online, we need to construct a $\phi$ table using the edges of the shape that we'd like to detect. $\phi$ table is constructed from the gradient orientation $\phi_i$ for $0^\circ \leq i \leq 360^\circ$ of the edge and the vector $\vec v_n$ from the edge point $(x, y)$ to the reference/center location $(x_c, y_c)$ for the object. Note that it is not a scale and orientation invariant detection technique.
 
-\subsection{Detecting Circles}
+When online, get the edge image and for all the edge pixels, obtain the gradient orientation. At each edge pixel, use the gradient orientation info to look up to the $\phi$ table; there may be multiple $\vec v_n$'s at the $\phi_i$ location/index. Vote to the cell that is located at $\vec v_n$ displacement away from the edge pixel. The reference location for the shape will get the highest vote.
 
 
 
