@@ -37,38 +37,38 @@ def copy_boundary(original_mat, extension):
 #===================================================================
 
 #===================================================================
-def normalized_correlation(matrix1, matrix2):
+def normalized_cross_correlation(matrix1, matrix2):
     """ Returns the normalized correlation of 'matrix1' & 'matrix2' """
-    matrix1_energy = (np.sum(np.power(matrix1, 2)))**(1/2)
-    matrix2_energy = (np.sum(np.power(matrix2, 2)))**(1/2)
-    correlation = np.sum(np.multiply(matrix1, matrix2)) /\
-                  (matrix1_energy * matrix2_energy)
+    matrix1_energy = np.sum(matrix1 ** 2)
+    matrix2_energy = np.sum(matrix2 ** 2)
+    cross_correlation = np.sum(matrix1 * matrix2) /\
+                        np.sqrt(matrix1_energy * matrix2_energy)
     # print(f'{normalized_matrix1}')
     # print(f'{normalized_matrix2}')
     # print(f'{correlation}')
 
-    return correlation
+    return cross_correlation
 #===================================================================
 
 #===================================================================
-def best_correlation(small_matrix, wide_matrix, start, end):
+def best_cross_correlation(small_matrix, wide_matrix, start, end):
     """ Returns the index of 'wide_matrix' with the best correlation
         with 'small_matrix' """
     # 'start' & 'end' are the extreme indices for the correlation test
-    correlation_index = start
-    correlation = 0
+    cross_correlation_index = start
+    cross_correlation = 0
     small_matrix_size = len(small_matrix)
 
     for i in range(start, end+1):
         test_window = wide_matrix[:, (i - int(small_matrix_size / 2)):\
                                   (i + int(small_matrix_size / 2) + 1)]
-        current_correlation = normalized_correlation(small_matrix, test_window)
+        current_cross_correlation = normalized_cross_correlation(small_matrix, test_window)
 
-        if (correlation < current_correlation):
-            correlation = current_correlation
-            correlation_index = i
+        if (cross_correlation < current_cross_correlation):
+            cross_correlation = current_cross_correlation
+            cross_correlation_index = i
 
-    return correlation_index - start
+    return cross_correlation_index - (small_matrix_size / 2)
 #===================================================================
 
 #===================================================================
@@ -84,6 +84,7 @@ def scanline_matrix(original_matrix, window_size, row_index):
 def disparity_image(left_image, right_image, window_size):
     """ Get the locations of the pixels of the right image corresponding
         to the pixel location of the left image """
+    disparity_horizon = 25
     disparity = np.zeros((len(left_image), len(left_image[0])))
 
     left_image_padded = copy_boundary(left_image, int(window_size / 2))
@@ -98,22 +99,26 @@ def disparity_image(left_image, right_image, window_size):
     for row in range(int(window_size / 2), len(left_image_padded) - int(window_size / 2)):
         wide_matrix = scanline_matrix(right_image_padded, window_size, row)
         # print(f'{wide_matrix}')
-        print(row)
+        print(f'Row#: {row}')
         for col in range(int(window_size / 2), len(left_image_padded[0]) - int(window_size / 2)):
             small_matrix = left_image_padded[(row - int(window_size / 2)): (row + int(window_size / 2) + 1),\
                                              (col - int(window_size / 2)): (col + int(window_size / 2) + 1)]
             # print(f'{small_matrix}')
 
-            correlation_column_index = best_correlation(small_matrix, wide_matrix, start, end)
-            # print(f'{correlation_column_index}')
+            # 'start' & 'end' are the extremes of indices to scan the 'wide_matrix' considering the horizon
+            end = col
+            start = end - disparity_horizon - 1
+            if (start >= (int(window_size / 2) + 1)):
+                start_time = time.time()
+                cross_correlation_column_index = best_cross_correlation(small_matrix, wide_matrix, start, end)
+                execution_time = time.time() - start_time
+                global total_time
+                total_time += execution_time
 
-            # Disparity between the pixel index/location of the left and right images
-            if (col != correlation_column_index):
-                disparity[row - int(window_size / 2)][col - int(window_size / 2)] =\
-                    1 / (col - correlation_column_index)
-            # TODO: Check for redundancy
-            else:
-                disparity[row - int(window_size / 2)][col - int(window_size / 2)] = 0.5
+                # Disparity between the pixel index/location of the left and right images
+                if (col != cross_correlation_column_index):
+                    disparity[row - int(window_size / 2)][col - int(window_size / 2)] =\
+                        col - cross_correlation_column_index
 
     return disparity
 #===================================================================
@@ -131,14 +136,14 @@ def map_to_range(image, range):
 
 #===================================================================
 if __name__ == "__main__":
-    start = time.time()
+    total_time = 0
     left_image = cv2.imread('.\Left.png')
     right_image = cv2.imread('.\Right.png')
 
     left_grayscale = cv2.cvtColor(left_image, cv2.COLOR_BGR2GRAY)
     right_grayscale = cv2.cvtColor(right_image, cv2.COLOR_BGR2GRAY)
 
-    window_size = 3
+    window_size = 7
 
     # Test
     # left_grayscale = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -158,7 +163,7 @@ if __name__ == "__main__":
 
     cv2.imwrite('DisparityImage.jpg', mapped_disparity)
     # cv2.imshow('Disparity Image', cv2.resize(mapped_disparity, (550, 550)))
-    print(f'Done in: {time.time() - start} s.')
+    print(f'Total time: {total_time}')
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
