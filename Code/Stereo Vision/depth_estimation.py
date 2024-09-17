@@ -81,10 +81,9 @@ def scanline_matrix(original_matrix, window_size, row_index):
 #===================================================================
 
 #===================================================================
-def disparity_image(left_image, right_image, window_size):
+def disparity_image(left_image, right_image, window_size, disparity_horizon):
     """ Get the locations of the pixels of the right image corresponding
         to the pixel location of the left image """
-    disparity_horizon = 25
     disparity = np.zeros((len(left_image), len(left_image[0])))
 
     left_image_padded = copy_boundary(left_image, int(window_size / 2))
@@ -144,6 +143,7 @@ if __name__ == "__main__":
     right_grayscale = cv2.cvtColor(right_image, cv2.COLOR_BGR2GRAY)
 
     window_size = 7
+    disparity_horizon = 25
 
     # Test
     # left_grayscale = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -158,10 +158,15 @@ if __name__ == "__main__":
     #                            [46, 5, 56, 7, 8, 10, 89, 56, 67],
     #                            [143, 164, 255, 206, 76, 80, 99, 23, 44]])
 
-    disparity = disparity_image(left_grayscale, right_grayscale, window_size)
+    disparity = disparity_image(left_grayscale, right_grayscale, window_size, disparity_horizon)
+
+    # Remove the portion of 'disparity' that couldn't tested
+    disparity = disparity[:, (disparity_horizon + window_size):len(disparity[0])]
+
+    # Map to range
     mapped_disparity = map_to_range(disparity, np.array([0, 255]))
 
-    cv2.imwrite('DisparityImage.jpg', mapped_disparity)
+    cv2.imwrite('DisparityImage.png', mapped_disparity)
     # cv2.imshow('Disparity Image', cv2.resize(mapped_disparity, (550, 550)))
     print(f'Total time: {total_time}')
 
