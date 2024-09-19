@@ -95,6 +95,41 @@ After the non-maximum suppression, hysteresis thresholding is applied. $2$ thres
 %--------------------------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------------------------
+\subsection{Corner Detection}
+\hspace{\parindent}We'll develop a Harris corner detector to find the edges in an image. There can be various routes to implement the same idea. Described here is the easiest method. Check out \href{https://www.youtube.com/watch?v=Z_HwkG90Yvw&t=566s}{this} video and \href{https://www.cs.cmu.edu/~16385/s17/Slides/6.2_Harris_Corner_Detector.pdf}{this} slide to get the basic idea.
+
+The goal ultimately boils down to evaluating a \textit{response function}
+\begin{align}
+	R = \lambda_1 \lambda_2 - \kappa (\lambda_1 + \lambda_2)^2
+	\label{eqn:cornerResponseFunction}
+\end{align}
+for a pixel where $\lambda_1$ \& $\lambda_2$ are the eigen values of
+\begin{align}
+	M &= \begin{bmatrix}
+			\sum_{p \in P} I_x I_x  &  \sum_{p \in P} I_x I_y \\
+			\sum_{p \in P} I_x I_y  &  \sum_{p \in P} I_y I_y 
+		\end{bmatrix}
+	\label{eqn:gradientCovarianceMatrix}
+\end{align}
+and $0.04 \leq \kappa \leq 0.06$ is a weighting term. $p \in P$ refers to the pixel $p$ in a window $P$. The eigen values for the gradient covariance matrix in Eq.~\ref{eqn:gradientCovarianceMatrix} captures the amount of the distribution of the gradient of image within the window $P$ in an arbitrary directions. That is to say, if $\lambda_1 \sim \lambda_2$, and the eigen values are small, then the image is flat since the gradients in $x$ and $y$ would be small. If $\lambda_1 >> \lambda_2$ or $\lambda_2 >> \lambda_1$, then there is an edge in the window since one of the gradients is large. If $\lambda_1$ and $\lambda_2$ are large and $\lambda_1 ~ \lambda_2$, then there exists a corner in the window $P$. $R$ in Eq.~\ref{eqn:cornerResponseFunction} basically captures this relationship between the eigen values. The pixel is a corner if $R > T$, where $T$ is a threshold value; $T$ is usually selected to be $5\%$ of the maximum R value.
+
+We can be clever and implement this method as follows. (Note that the steps are not exactly the same steps mentioned in the method)
+\begin{itemize}
+	\item Compute the gradient of the image in $x$ and $y$, i.e., $I_{x}$ and $I_{y}$,
+	\item Compute the products of the gradients, i.e., $I_{x^2}$, $I_{y^2}$, and $I_{xy}$,
+	\item Perform a Gaussian convolution; this results in the same effect as summing the products of the gradients\\
+		$S_{x^2}= G_{\sigma} I_{x^2}$, $S_{y^2}= G_{\sigma} I_{y^2}$, $S_{xy}= G_{\sigma} I_{xy}$
+	\item Compute $det = S_{x^2} S_{y^2} - 2 S_{xy}$ and $tr = S_{x^2} + S_{y^2}$
+	\item Compute $R = det - \kappa (tr)^2$. This gives the response function for ``all pixels"
+	\item Loop over R and threshold to get the corners in the image; the loop will give corner in the image and not just the window because of this implementation
+\end{itemize}
+
+
+
+
+%--------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------
 \section{Hough Transform}
 \subsection{Detecting Lines}
 \hspace{\parindent}Lines represented as 
@@ -153,6 +188,13 @@ Considering the origin of the image at the lower-bottom part, the image can be s
 \hspace{\parindent}Prior to running the detection online, we need to construct a $\phi$ table using the edges of the shape that we'd like to detect. $\phi$ table is constructed from the gradient orientation $\phi_i$ for $0^\circ \leq i \leq 360^\circ$ of the edge and the vector $\vec v_n$ from the edge point $(x, y)$ to the reference/center location $(x_c, y_c)$ for the object. Note that it is not a scale and orientation invariant detection technique.
 
 When online, get the edge image and for all the edge pixels, obtain the gradient orientation. At each edge pixel, use the gradient orientation info to look up to the $\phi$ table; there may be multiple $\vec v_n$'s at the $\phi_i$ location/index. Vote to the cell that is located at $\vec v_n$ displacement away from the edge pixel. The reference location for the shape will get the highest vote.
+
+
+
+%--------------------------------------------------------------------------------------------
+\section{Stereo Vision}
+\subsection{Correspondence \& Disparity}
+\hspace{\parindent}For a coplanar stereo vision system, the $2$D correspondence problem reduces to a simple $1$D correspondence problem. In the code, we assume that the epipolar lines are parallel to the rows of the images; that is, search the pixel of the left image along the corresponding row of the right image. In fact, we perform template matching rather than matching just the pixel brightness. We've used normalized cross correlation for template matching.
 
 
 
