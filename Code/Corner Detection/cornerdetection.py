@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-img = cv2.imread('ChessBoard.png')
+img = cv2.imread('.\ChessBoard.png')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 print(np.float32(img))
@@ -13,6 +13,6 @@ img[dst>0.035*dst.max()]=[255,255,0]
 
 ##print(gray)
 
-cv2.imshow('image',img)
+cv2.imshow('image',cv2.resize(img, (550, 550)))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
