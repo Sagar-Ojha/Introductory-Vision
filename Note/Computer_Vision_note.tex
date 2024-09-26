@@ -123,8 +123,54 @@ We can be clever and implement this method as follows. (Note that the steps are 
 	\item Compute $R = det - \kappa (tr)^2$. This gives the response function for ``all pixels"
 	\item Loop over R and threshold to get the corners in the image; the loop will give corner in the image and not just the window because of this implementation
 \end{itemize}
+%--------------------------------------------------------------------------------------------
 
+%--------------------------------------------------------------------------------------------
+\subsection{SIFT}
+\hspace{\parindent}The motivation for scale-invariance feature transform (SIFT) algorithms is tied to detecting the same \textit{feature} across multiple images. SIFT is an algorithm to detect as well as describe local features in an image. A ``feature" or an interest point has, loosely speaking, a position and size associated with it; SIFT obtains the position and the scale of the feature. In a way, the term ``feature" is a region that SIFT detects; this is a circular explanation, but that is the best way I could define it as of now. But do note that a ``feature" has some characteristics; these characteristics, however, are not very hard and fast. \href{https://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/AV0405/MURRAY/SIFT.html}{Here's} the reference for the explanation of SIFT feature.
 
+Check \href{https://www.youtube.com/watch?v=zItstOggP7M&list=PL2zRqk16wsdqXEMpHrc4Qnb5rA1Cylrhx&index=14}{this} out to see how SIFT works for both $1$D and $2$D images. To summarize, first the image is convolved with the Laplacian of the Gaussian (LoG); LoG is the second derivative of the Gaussian kernel. After convolution, one needs to normalize the output by multiplying the Laplacian convolution with $\sigma^2$ where $\sigma$ is the standard deviation of the Gaussian used to construct Laplacian. In order to make the detection scale-invariant, the process is repeated for many different LoG kernels, i.e. to say, the process is repeated for different $\sigma$. Then, the $\sigma$ at which the $\sigma$ normalized Laplacian filter results in the extreme value is selected as the \textit{characteristic scale} for the feature. The \textit{characteristic scale} $\propto$ \textit{feature size}. This proportionality means the feature is detected at various scales. In other words, whether the image is zoomed in or out, the feature can be located and the size of the feature can also be computed for both the images. The pseudocode is given below:
+\begin{itemize}
+	\item For an image $I(x,y)$, convolve it with normalized Laplacian of Gaussian (NLoG); $NLoG = \sigma^2 \nabla^2 n_\sigma$ \\
+		Convolution is given as $\sigma^2 \nabla^2 n_\sigma * I(x,y)$
+	\item Repeat the above step for various $\sigma$
+	\item Find the local maximum
+		$(x^*, y^*, \sigma^* = \max_{(x, y, \sigma)} |\sigma^2 \nabla^2 n_\sigma * I(x,y)|$
+	\item The minimization problem above gives us the locations and scales of the SIFT features; yes, it may detect multiple SIFT features.
+\end{itemize}
+
+The actual implementation of SIFT detection utilizes various tricks rather than the straightforward steps that we have discussed so far. These tricks make the implementation efficient without losing robustness. The trick is to approximate the NLoG function as the difference of Gaussian (DoG) where $DoG = n_{s\sigma} - n_\sigma$ as $DoG \approx (s - 1) NLoG$. Check \href{https://www.youtube.com/watch?v=ram-jbLJjFg&list=PL2zRqk16wsdqXEMpHrc4Qnb5rA1Cylrhx&index=15}{this} video for the details about DoG.
+
+The SIFT feature also has a principal orientation associated with it. The direction is obtained using the gradient of the feature. The direction of the gradient which is dominant is the principal orientation. Create a discretized histogram of the gradient directions and then select the principal direction as the direction that gets the most votes.
+
+So far we can detect as well as define the position, scale, and the rotation of the SIFT feature. The data can be used to undo rotation and scaling effects when necessary. There can be many SIFT features in an image. In order to match the SIFT feature between images, we needs to make a distinction between the features. Note that the position, scale and rotation are not enough information to make distinctions between the SIFT feature between the images. What we need is a \textit{descriptor} of the feature. The \textit{descriptor} is a vector that is constructed from the histogram of the gradient directions; the histograms are stored in a specific order in the vector. Note that the \textit{descrpitor} vector will belong to a very high dimensional vector space depending on the number of the histogram bins. In order to compare the SIFT feature, we compare the descriptors of the features. One way of comparing descriptors is to find the $L_2$ distance between the descriptor vectors; the perfect the match, the closer the vectors will be. Other methods that measure different metrics also exist; normalized correlation and intersection are some methods.
+
+SIFT is a robust feature detection method for planar objects detection but fails for the $3$D object detection. SIFT relies on local appearance of the feature in the image; so, if the image of the same scene from 2 different viewpoints are taken, then the method fails. \textcolor{blue}{Likewise, SIFT fails to have a unique descriptor for repeating patterns.} So, SIFT will do very poorly for feature matching. Nevertheless, SIFT is very popular for finding correspondences in the images.
+%--------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------
+\section{Image Stitching}
+\subsection{RANSAC}
+\hspace{\parindent}Random sample concensus (RANSAC) is a method to estimate the mathematical model from the dataset with a high number of outliers. Least-squared method fails to estimate the model when there are many outliers as least-squared method aims to get the model that fits all the dataset, both the inliers and the outliers. In RANSAC, we come up with the model and count the number of dataset that are within a certain threshold from the model prediction. The model with the largest number of inliers is selected by RANSAC.
+
+The \textit{homography} matrix represents the transformation between $2$ planar projections where the projections are through the same pinhole. One can estimate the \textit{homography} matrix using a minimum of $4$ corresponding points between $2$ images as explained \href{https://www.youtube.com/watch?v=l_qjO4cM74o&list=PL2zRqk16wsdp8KbDfHKvPYNGF2L-zQASc&index=4}{here}. SIFT can be utilized to find the corresponding points. RANSAC can be utilized to come up with a better estimate of the homography. Below is the outline for the process.
+
+\begin{itemize}
+	\item \textcolor{blue}{Before performin RANSAC, it is extremely important to have only good SIFT matches}
+	\item Estimate the \textit{homography} using a minimum of $4$ corresponding points selected at random; if more points are used, then least squared solution for the estimate should be taken
+	\item Using the estimated model of the \textit{homography}, compute where the SIFT features of one image land on the other image
+	\item Compute the error between the actual positions of the SIFT features in the second image and the predictions made by the estimated model
+	\item If the error is within the specified threshold, then the position of the feature is considered to be an inlier
+	\item Estimate another \textit{homography} and repeat the above processess
+	\item Pick the model with the most number of inliers
+	\item The inliers could be used as well to compute the final \textit{homography} using least-squared method
+\end{itemize}
+%--------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------
+\subsection{Warping \& Stitching}
+\hspace{\parindent}Warping refers to mapping the image onto another plane. Using the \textit{homography}, warp the image onto the reference plane or image and stitch the images. In practice, one first needs to create a canvas to stitch both images. After that, using backwards mapping, fill up the canvas. In other words, for each pixel in the canvas, find the coordinates of the pixels in unwarped image using the inverse of homography and fill up the canvas. For the reference image, only the translation of the origin has to be account for while filling up the canvas. Blending could be utilized to get rid of any seam produced while stitching.
+%--------------------------------------------------------------------------------------------
 
 
 %--------------------------------------------------------------------------------------------
