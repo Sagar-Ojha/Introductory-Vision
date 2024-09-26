@@ -70,8 +70,10 @@ def get_homography(all_matched_points, RANSAC_max_iterations, RANSAC_inlier_erro
         # The indices of the rows and columns for grayscale images have to be carefully considered
         A = np.empty(shape=[0, 9])
         for r in rands:
-            a1 = np.array([[matches[r][0][0], matches[r][0][1], 1, 0, 0, 0, -matches[r][1][0] * matches[r][0][0], -matches[r][1][0] * matches[r][0][1], -matches[r][1][0]]])
-            a2 = np.array([[0, 0, 0, matches[r][0][0], matches[r][0][1], 1, -matches[r][1][1] * matches[r][0][0], -matches[r][1][1] * matches[r][0][1], -matches[r][1][1]]])
+            a1 = np.array([[matches[r][0][0], matches[r][0][1], 1, 0, 0, 0, -matches[r][1][0] * matches[r][0][0],\
+                           -matches[r][1][0] * matches[r][0][1], -matches[r][1][0]]])
+            a2 = np.array([[0, 0, 0, matches[r][0][0], matches[r][0][1], 1, -matches[r][1][1] * matches[r][0][0],\
+                           -matches[r][1][1] * matches[r][0][1], -matches[r][1][1]]])
             a = np.append(a1, a2, axis=0)
             A = np.append(A, a, axis=0)
 
@@ -80,8 +82,8 @@ def get_homography(all_matched_points, RANSAC_max_iterations, RANSAC_inlier_erro
         # h = eigenvectors[np.argmin(eigenvalues)]
         
         # Alternatively, homography can be computed using SVD as well
-        _, _, Vt = np.linalg.svd(A)
-        h = Vt[-1]
+        U, S, Vh = np.linalg.svd(A)
+        h = Vh[-1]
 
         # Construct the matrix
         current_homography = np.array([[h[0], h[1], h[2]],
@@ -104,7 +106,8 @@ def get_homography(all_matched_points, RANSAC_max_iterations, RANSAC_inlier_erro
             destination_pixel_position_prediction /= z_d
 
             # Check if the predicted position is within the threshold distance from the actual position
-            if (np.linalg.norm(destination_pixel_position_prediction - destination_pixel_position) < RANSAC_inlier_error_threshold):
+            if (np.linalg.norm(destination_pixel_position_prediction - destination_pixel_position) <\
+                RANSAC_inlier_error_threshold):
                 current_inliers += 1
                 # print(f'{current_inliers}')
 
@@ -118,10 +121,71 @@ def get_homography(all_matched_points, RANSAC_max_iterations, RANSAC_inlier_erro
 #===================================================================
 
 #===================================================================
-# def get_transformed_image(homography, image1):
-#     """ Returns the pixel coordinates of image1 after applying the homography transformation """
-#     # Image1 is the left image
-#     return
+def warp_and_stitch(image1, image2, homography):
+    """ Warps image1 and then stitches the warped image1 with image2 """
+    # Get the transformed locations of the 4 corners of image1 after applying homography
+    # In homogeneous coordinates
+    left_top_homo = homography @ np.array([[0], [0], [1]])
+    left_bottom_homo = homography @ np.array([[0], [len(image1)], [1]])
+    right_top_homo = homography @ np.array([[len(image1[0])], [0], [1]])
+    right_bottom_homo = homography @ np.array([[len(image1[0])], [len(image1)], [1]])
+
+    # In pixel coordinates
+    left_top = np.array([[left_top_homo[0][0]], [left_top_homo[1][0]]]) / left_top_homo[2][0]
+    left_bottom = np.array([[left_bottom_homo[0][0]], [left_bottom_homo[1][0]]]) / left_bottom_homo[2][0]
+    right_top = np.array([[right_top_homo[0][0]], [right_top_homo[1][0]]]) / right_top_homo[2][0]
+    right_bottom = np.array([[right_bottom_homo[0][0]], [right_bottom_homo[1][0]]]) / right_bottom_homo[2][0]
+
+    # Construct the empty canvas
+    additional_left_shift = int(np.abs(min(left_top[0][0], left_bottom[0][0])))
+    additional_height = int(min(left_top[1][0], right_top[1][0]))
+    additional_depth  = int(max(left_bottom[1][0], right_bottom[1][0]) - len(image2))
+
+    # Convert the height and depth values to positive integers
+    if (additional_height > 0): additional_height = 0
+    else: additional_height = np.abs(additional_height)
+    if (additional_depth < 0): additional_depth = 0
+
+    stitched_image = np.zeros((len(image2) + additional_height + additional_depth,\
+                               len(image2[0]) + additional_left_shift, 3), dtype=np.uint8)
+
+    # print(f'Added Height: {additional_height}')
+    # print(f'Added Depth: {additional_depth}')
+    # print(f'Added Left Shift: {additional_left_shift}')
+    # print(f'{np.shape(stitched_image)}')
+
+    # Loop over the canvas and get the pixel from image1
+    for row in range(len(stitched_image)):
+        for col in range(len(stitched_image[0])):
+            # Express (col, row) in the coordinate frame of image2
+            x = col - additional_left_shift
+            y = row - additional_height
+            image1_transformed_coordinates = np.array([[x], [y], [1]])
+
+            # Compute the coordinates in image1 before the homography
+            corresponding_image1_coordinates = np.linalg.inv(homography) @ image1_transformed_coordinates
+            corresponding_image1_coordinates /= corresponding_image1_coordinates[2][0]
+            x_corresponding = int(corresponding_image1_coordinates[0][0])
+            y_corresponding = int(corresponding_image1_coordinates[1][0])
+
+            # Grab the pixel from image1 and put it in stitched_image
+            if ((0 <= x_corresponding < len(image1[0])) and\
+                (0 <= y_corresponding < len(image1))):
+                stitched_image[row][col][:] = image1[y_corresponding][x_corresponding]
+    
+    # Loop over the canvas one more time and get the pixel from image2
+    for row in range(len(stitched_image)):
+        for col in range(len(stitched_image[0])):
+            # Get the pixel location in image1
+            x = col - additional_left_shift
+            y = row - additional_height
+
+            # Grab the pixel from image2 and put it in stitched_image
+            if ((0 <= x < len(image2[0])) and\
+                (0 <= y < len(image2))):
+                stitched_image[row][col][:] = image2[y][x]
+
+    return stitched_image
 #===================================================================
 
 #===================================================================
@@ -129,6 +193,7 @@ if __name__ == "__main__":
     initial_time = time.time()
     image1 = cv2.imread('.\Mountain1.jpg')
     image2 = cv2.imread('.\Mountain2.jpg')
+    # print(f'Shape of image1: {np.shape(image1)}')
 
     image1_grayscale = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
     image2_grayscale = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
@@ -173,11 +238,8 @@ if __name__ == "__main__":
     # Warp image1 to image2. Hence, source image would be image1 and the destination image would be image2
     # image1_transformed = get_transformed_image(homography, image1)
 
-    # warp image1 onto image2
-    stitched_image = cv2.warpPerspective(image1, homography,\
-                                        (image2.shape[1]+image1.shape[1],
-                                         image2.shape[0]+image1.shape[0]))
-
+    # warp image1 onto image2 and stitch the images
+    stitched_image = warp_and_stitch(image1, image2, homography)
 
     # Runtime
     current_time = time.time()
@@ -186,7 +248,7 @@ if __name__ == "__main__":
     print(f'Total time: {total_time} s')
 
     # Stitched Image
-    # cv2.imwrite('StitchedImage.png', stitched_image)
+    cv2.imwrite('StitchedImage.png', stitched_image)
     cv2.imshow('StitchedImage', stitched_image)
 
     cv2.waitKey(0)
