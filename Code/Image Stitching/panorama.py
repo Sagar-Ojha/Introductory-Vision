@@ -2,6 +2,7 @@ import random
 import time
 import cv2
 import numpy as np
+import copy
 #===================================================================
 #===================================================================
 
@@ -189,57 +190,76 @@ def warp_and_stitch(image1, image2, homography):
 #===================================================================
 
 #===================================================================
+def create_panorama(images):
+    """ Returns a panorama image by combining elements of images """
+    # Initialize image_left as the first element of images
+    image_left = copy.deepcopy(images[0])
+
+    # Initialize panorama
+    panorama = np.array((1,1))
+
+    # Loop over to get panorama
+    for i in range(1, len(images)):
+        image_right = images[i]
+        image_left_grayscale = cv2.cvtColor(image_left, cv2.COLOR_BGR2GRAY)
+        image_right_grayscale = cv2.cvtColor(image_right, cv2.COLOR_BGR2GRAY)
+
+        # Get the SIFT features from the images
+        image_left_sift = cv2.SIFT_create()
+        image_right_sift = cv2.SIFT_create()
+
+        image_left_sift_keypoints, image_left_sift_descriptor = \
+            image_left_sift.detectAndCompute(image_left_grayscale, None)
+        image_right_sift_keypoints, image_right_sift_descriptor = \
+            image_right_sift.detectAndCompute(image_right_grayscale, None)
+
+        # Draw the keypoints along with the scale and orientation of the keypoint to the image
+        # image1_with_keypoints = cv2.drawKeypoints(image1_grayscale, image1_sift_keypoints,\
+        #                                           image1, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # image2_with_keypoints = cv2.drawKeypoints(image2_grayscale, image2_sift_keypoints,\
+        #                                           image2, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        # Convert the keypoint coordinates to float
+        image_left_keypoints_coordinates = cv2.KeyPoint.convert(image_left_sift_keypoints)
+        image_right_keypoints_coordinates = cv2.KeyPoint.convert(image_right_sift_keypoints)
+
+        # Match the keypoints from one image to another image
+        all_matched_keypoints = get_matched_keypoints(image_left_keypoints_coordinates, image_left_sift_descriptor,\
+                                                      image_right_keypoints_coordinates, image_right_sift_descriptor)
+        
+        # np.savetxt('all_matched_keypoints', all_matched_keypoints[0], delimiter=' ')
+        # np.savetxt('image1_keypoints_coordinates', image1_keypoints_coordinates, delimiter=' ')
+        # np.savetxt('image2_keypoints_coordinates', image2_keypoints_coordinates, delimiter=' ')
+
+        # Apply RANSAC to get the Homography
+        RANSAC_max_iterations = 1000
+        RANSAC_inlier_error_threshold = 5
+        homography = get_homography(all_matched_keypoints, RANSAC_max_iterations, RANSAC_inlier_error_threshold)
+        # print(f'Homography:\n{homography}')
+
+        # Warp image1 onto image2 and stitch the images
+        stitched_image = warp_and_stitch(image_left, image_right, homography)
+
+        # Set image1 as stitched_image for the next loop
+        image_left = copy.deepcopy(stitched_image)
+
+        # Set new panorama
+        panorama = stitched_image
+
+    return panorama
+#===================================================================
+
+#===================================================================
 if __name__ == "__main__":
     initial_time = time.time()
     image1 = cv2.imread('.\Mountain1.jpg')
     image2 = cv2.imread('.\Mountain2.jpg')
+    image3 = cv2.imread('.\Mountain3.jpg')
     # print(f'Shape of image1: {np.shape(image1)}')
 
-    image1_grayscale = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-    image2_grayscale = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+    images = [image1, image2, image3]
 
-    # Get the SIFT features from the images
-    image1_sift = cv2.SIFT_create()
-    image2_sift = cv2.SIFT_create()
-
-    image1_sift_keypoints, image1_sift_descriptor = image1_sift.detectAndCompute(image1_grayscale, None)
-    image2_sift_keypoints, image2_sift_descriptor = image2_sift.detectAndCompute(image2_grayscale, None)
-
-    # Draw the keypoints along with the scale and orientation of the keypoint to the image
-    # image1_with_keypoints = cv2.drawKeypoints(image1_grayscale, image1_sift_keypoints,\
-    #                                           image1, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    # image2_with_keypoints = cv2.drawKeypoints(image2_grayscale, image2_sift_keypoints,\
-    #                                           image2, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-    # Convert the keypoint coordinates to float
-    image1_keypoints_coordinates = cv2.KeyPoint.convert(image1_sift_keypoints)
-    image2_keypoints_coordinates = cv2.KeyPoint.convert(image2_sift_keypoints)
-
-    # Match the keypoints from one image to another image
-    all_matched_keypoints = get_matched_keypoints(image1_keypoints_coordinates, image1_sift_descriptor,\
-                                                  image2_keypoints_coordinates, image2_sift_descriptor)
-    
-    # np.savetxt('all_matched_keypoints', all_matched_keypoints[0], delimiter=' ')
-    # np.savetxt('image1_keypoints_coordinates', image1_keypoints_coordinates, delimiter=' ')
-    # np.savetxt('image2_keypoints_coordinates', image2_keypoints_coordinates, delimiter=' ')
-
-    # Apply RANSAC to get the Homography
-    RANSAC_max_iterations = 1000
-    RANSAC_inlier_error_threshold = 5
-    homography = get_homography(all_matched_keypoints, RANSAC_max_iterations, RANSAC_inlier_error_threshold)
-    print(f'Homography:\n{homography}')
-
-    # homography obtained using opencv function is
-    # homography = np.array([[ 1.12277084e+00, -5.91029184e-02, -1.63100279e+02],
-    #                        [ 1.08775556e-01,  1.06881700e+00, -3.03151637e+00],
-    #                        [ 3.47984883e-04, -7.88259557e-05,  1.00000000e+00]])
-
-    # Apply the transformation on the source image to get the destination location
-    # Warp image1 to image2. Hence, source image would be image1 and the destination image would be image2
-    # image1_transformed = get_transformed_image(homography, image1)
-
-    # warp image1 onto image2 and stitch the images
-    stitched_image = warp_and_stitch(image1, image2, homography)
+    panorama = create_panorama(images)
 
     # Runtime
     current_time = time.time()
@@ -248,8 +268,8 @@ if __name__ == "__main__":
     print(f'Total time: {total_time} s')
 
     # Stitched Image
-    cv2.imwrite('StitchedImage.png', stitched_image)
-    cv2.imshow('StitchedImage', stitched_image)
+    cv2.imwrite('Panorama.png', panorama)
+    cv2.imshow('Panorama', panorama)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
