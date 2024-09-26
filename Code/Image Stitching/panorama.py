@@ -268,8 +268,8 @@ if __name__ == "__main__":
     print(f'Total time: {total_time} s')
 
     # Stitched Image
-    cv2.imwrite('Panorama.png', panorama)
-    cv2.imshow('Panorama', panorama)
+    cv2.imwrite('StitchedImage.png', panorama)
+    cv2.imshow('StitchedImage', panorama)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
