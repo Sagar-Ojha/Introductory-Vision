@@ -6,3 +6,4 @@
 
 ## Work to do
 1) Modify to stitch multiple images in a run
+2) Needs blending
