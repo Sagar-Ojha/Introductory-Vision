@@ -104,8 +104,8 @@ def show_image_corners(corners_coordinates, original_image):
     image_with_corner = np.array(original_image)
     for corner in corners_coordinates:
         image_with_corner[corner[0]][corner[1]][0] = 200
-        image_with_corner[corner[0]][corner[1]][1] = 100
-        image_with_corner[corner[0]][corner[1]][2] = 200
+        image_with_corner[corner[0]][corner[1]][1] = 213
+        image_with_corner[corner[0]][corner[1]][2] = 48
 
     return image_with_corner
 #===================================================================
@@ -147,6 +147,7 @@ if __name__ == "__main__":
     # cv2.imshow('Gradient Image X', cv2.resize(gradient_image_x.astype(np.uint8), (550, 550)))
     # cv2.imshow('Gradient Image Y', cv2.resize(gradient_image_y.astype(np.uint8), (550, 550)))
     cv2.imshow('Corner Image', cv2.resize(image_with_corner.astype(np.uint8), (550, 550)))
+    cv2.imwrite('CornerImage.png', cv2.resize(image_with_corner.astype(np.uint8), (550, 550)))
 
     # print(len(blurred_mat), len(blurred_mat[0]))
     # print(len(chess_grayscale), len(chess_grayscale[0]))
