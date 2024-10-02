@@ -150,6 +150,7 @@ SIFT is a robust feature detection method for planar objects detection but fails
 
 %--------------------------------------------------------------------------------------------
 \section{Image Stitching}
+\label{section:ImageStitching}
 \subsection{RANSAC}
 \hspace{\parindent}Random sample concensus (RANSAC) is a method to estimate the mathematical model from the dataset with a high number of outliers. Least-squared method fails to estimate the model when there are many outliers as least-squared method aims to get the model that fits all the dataset, both the inliers and the outliers. In RANSAC, we come up with the model and count the number of dataset that are within a certain threshold from the model prediction. The model with the largest number of inliers is selected by RANSAC.
 
@@ -316,8 +317,7 @@ where $(x_w, y_w, z_w)$ are the coordinates of a point in world coordinate frame
 	\begin{bmatrix}
 		p_{11} & p_{12} & p_{13} & p_{14} \\
 		p_{21} & p_{22} & p_{23} & p_{24} \\
-		p_{31} & p_{32} & p_{33} & p_{34} \\
-		p_{41} & p_{42} & p_{43} & p_{44}
+		p_{31} & p_{32} & p_{33} & p_{34}
 	\end{bmatrix}
 	\begin{bmatrix}
 		x_w \\
@@ -332,9 +332,10 @@ where $(x_w, y_w, z_w)$ are the coordinates of a point in world coordinate frame
 
 %--------------------------------------------------------------------------------------------
 \subsection{Calibration}
-\hspace{\parindent}Camera calibration refers to finding the projection matrix in Eq.~\ref{eqn:WorldToImage}. The projection matrices $P$ and $kP$ produce the same homogeneous pixel coordinates, hence, we say that the projection is defined only up to a scale. One can set the scale arbitrarily by either setting $p_{34} = 1$ or setting $||p||^2 = 1$. This implies that there are $11$ unknown parameters in the projection matrix. Hence, a minimum of $6$ points are necessary to solve for the parameters. Unlike homography, find the points in the image plane and obtain the world coordinates of the points. A simple checkered pattern can be utilized for the calibration. Also, take multiple images and obtain the perspective transformation matrix. Intrinsic paramters are not affected by the changing views.
+\subsubsection{Direct Linear Transformation}
+\hspace{\parindent}Camera calibration refers to finding the projection matrix in Eq.~\ref{eqn:WorldToImage}. The projection matrices $P$ and $kP$ produce the same homogeneous pixel coordinates, hence, we say that the projection is defined only up to a scale. One can set the scale arbitrarily by either setting $p_{34} = 1$ or setting $||p||^2 = 1$. This implies that there are $11$ unknown parameters in the projection matrix. Hence, a minimum of $6$ points are necessary to solve for the parameters. Unlike homography, find the points in the image plane and obtain the world coordinates of the points. A simple checkered pattern on a $3$D cube can be utilized for the calibration. Intrinsic paramters are not affected by the changing views.
 
-The projection matrix can be decoupled into \textit{intrinsic} and \textit{extrinsic} matrices. In order to obtain the \textit{intrinsic} paramters as well as the rotation matrix, one can use ``QR" factorization method as
+The projection matrix can be decoupled into \textit{intrinsic} and \textit{extrinsic} matrices. In order to obtain the \textit{intrinsic} paramters as well as the rotation matrix, one can use ``RQ" factorization method as
 \begin{align}
 	\begin{bmatrix}
 		p_{11} & p_{12} & p_{13} \\
@@ -374,16 +375,132 @@ and the translation vector is obtained by solving
 	\end{bmatrix}.
 	\label{eqn:TranslationDecoupled}
 \end{align}
+
+
+\subsubsection{Zhang's Method}
+\hspace{\parindent}DLT method for camera calibration must use a $3$D object for calibration. On the other hand, one can obtain the intrinsic parameters of the camera using images of planar surfaces as well using Zhang's method. Zhang's method estimates the \textit{homography} matrix instead of the $projection$ matrix for each image. The \textit{homography} transformation of a point from the camera coordinates $(X, Y)$ to the image/pixel coordinates $(x, y)$ is given as
+\begin{align}
+	\begin{bmatrix}
+		x \\
+		y \\
+		1
+	\end{bmatrix}
+	\equiv
+	\begin{bmatrix}
+		\tilde{x} \\
+		\tilde{y} \\
+		\tilde{z}
+	\end{bmatrix}
+	&=
+	H
+	\begin{bmatrix}
+		X_i \\
+		Y_i \\
+		1
+	\end{bmatrix}
+\end{align}
+
+\textcolor{blue}{Note that the homography here is not a mapping between $2$ image planes but rather a plane in the physical world and the image plane.} Since the \textit{homography} $H$ has $8$ DOF and each point provides $2$ observations, we need a minimum of $4$ points to compute $H$. $H$ is defined as
+\begin{align}
+	\underbrace{\begin{bmatrix}
+		h_1 & h_2 & h_3
+	\end{bmatrix}}_{H}
+	=
+	\underbrace{\begin{bmatrix}
+		c & c.s & x_H \\
+		0 & c(1+m) & y_H \\
+		0 & 0 & 1
+	\end{bmatrix}}_{K}
+	\underbrace{\begin{bmatrix}
+		r_{11} & r_{12} & t_1 \\
+		r_{21} & r_{22} & t_2 \\
+		r_{31} & r_{32} & t_3
+	\end{bmatrix}}_{\begin{bmatrix}
+						r_1 & r_2 & t
+					\end{bmatrix}}
+	\label{eqn:HomographyZhang}
+\end{align}
+
+Note that the intrinsic matrix $K$ can't be obtained using ``RQ" factorization of $H$ as $H$ doesn't contain the orthonormal matrix; it only contains the upper triangular matrix. We can exploit the constraints on the parameters to obtain $K$ as follows.
+From Eq.~\ref{eqn:HomographyZhang}, we get
+\begin{align}
+	r_1 = K^{-1} h_1, \quad r_2 = K^{-1} h_2.
+\end{align}
+Since, $r_1$ and $r_2$ are orthogonal,
+\begin{align}
+	r^{T}_1 r_2 = 0 \\
+	h^{T}_1 K^{-1^T} K^{-1} h_2 = 0,
+	\label{eqn:Constraint1Zhang}
+\end{align}
+and since $||r_1||_2 = ||r_2||_2 = 1$
+\begin{align}
+	h^{T}_1 K^{-1^T} K^{-1} h_1 &= h^{T}_2 K^{-1^T} K^{-1} h_2 \\
+	h^{T}_1 K^{-1^T} K^{-1} h_1 - h^{T}_2 K^{-1^T} K^{-1} h_2 &= 0.
+	\label{eqn:Constraint2Zhang}
+\end{align}
+
+Let, $B \triangleq K^{-1^T} K^{-1}$. Then, Eq.~\ref{eqn:Constraint1Zhang} and \ref{eqn:Constraint2Zhang} can be expressed in terms of $B$ as
+\begin{align}
+	h^{T}_1 B h_2 &= 0, \\
+	h^{T}_1 B h_1 - h^{T}_2 B h_2 &= 0.
+	\label{eqn:ConstraintInBZhang}
+\end{align}
+
+Let $b = [B_{11} \; B_{12} \; B_{13} \; B_{22} \; B_{B_23} \; B_{33}]^{T}$. Using the constraints in Eq.~\ref{eqn:ConstraintInBZhang}, or equivalently, the constraints in Eq.~\ref{eqn:Constraint1Zhang} and \ref{eqn:Constraint2Zhang}, one gets
+\begin{align}
+	v^{T}_{12} b = 0, \quad v^{T}_{11} b - v^{T}_{22} b = 0
+	\label{eqn:ConstraintInVZhang}
+\end{align}
+where
+\begin{align}
+	v_{ij}
+	=
+	\begin{bmatrix}
+		h_{1i} h_{1j} \\[5pt]
+		h_{1i} h_{2j} + h_{2i} h_{1j} \\[5pt]
+		h_{3i} h_{1j} + h_{1i} h_{3j} \\[5pt]
+		h_{2i} h_{2j} \\[5pt]
+		h_{2i} h_{3j} + h_{3i} h_{2j} \\[5pt]
+		h_{3i} h_{3j}
+	\end{bmatrix}.
+	\label{eqn:ElementsOfVZhang}
+\end{align}
+Using Eq.~\ref{eqn:ConstraintInVZhang}, one can construct a system of linear equations  obtained from a ``single image" as
+\begin{align}
+	\begin{bmatrix}
+		v^{T}_{12} \\[5pt]
+		v^{T}_{11} - v^{T}_{22}
+	\end{bmatrix}
+	b = \mathbf{0}.
+	\label{eqn:BSingleImage}
+\end{align}
+
+One can get $b \in\Re^{6}$ using a minimum of $3$ images. The system of linear equations obtained using $n$ images will be as follows
+\begin{align}
+	\begin{bmatrix}
+		{v^{T}_{12}}^{(1)} \\[5pt]
+		{v^{T}_{11}}^{(1)} - {v^{T}_{22}}^{(1)} \\[5pt]
+		{v^{T}_{12}}^{(2)} \\[5pt]
+		{v^{T}_{11}}^{(2)} - {v^{T}_{22}}^{(2)} \\[5pt]
+		\vdots \\[5pt]
+		{v^{T}_{12}}^{(n)} \\[5pt]
+		{v^{T}_{11}}^{(n)} - {v^{T}_{22}}^{(n)}
+	\end{bmatrix}
+	b = \mathbf{0}.
+	\label{eqn:BMultipleImages}
+\end{align}
+
+To summarize, the goal is to construct $V \in\Re^{2n \times 6}$ as defined in Eq.~\ref{eqn:BMultipleImages}; $n \geq 3$ is the number of calibration images. Then using the \textit{Cholesky} decomposition of the $B$ matrix, one gets $K^{-1^T}$ where $K$ is the intrinsic matrix. \textcolor{blue}{$B$ is constructed using $b$ where $b$ is obtained using the SVD of $V$; $b$ is the singular vector of $V$ with the least singular value. Also, $chol(B) = A A^{T}$ and $A = K^{-1^T}$.} Obtain $v_{ij}$ from the homography matrix of each calibration image as defined in Eq.~\ref{eqn:ElementsOfVZhang}. The homography between checkerboard plane and the image/pixel plane for each calibration image is obtained in the similar way as one obtained for \hyperref[section:ImageStitching]{Image Stitching}.
 %--------------------------------------------------------------------------------------------
 
 
 %--------------------------------------------------------------------------------------------
 \subsection{Simple Stereo}
-\hspace{\parindent}Simple stereo or horizontal stereo could be utilized to estimate depth using $2$ images taken from each camera in the stereo setup. The $3$d coordinates of the point expressed in camera frame are obtained as
+\hspace{\parindent}Simple stereo or horizontal stereo could be utilized to estimate depth using $2$ images taken from each camera in the stereo setup. The $3$D coordinates of the point expressed in camera frame are obtained as
 \begin{align}
-	x =\frac{b (u_l - o_x)}{u_l - u_r}, y = \frac{b f_x (v_l - o_y)}{f_y (u_l - u_r)}, z = \frac{b f_x}{u_l - u_r}
+	x =\frac{b (u_l - o_x)}{u_l - u_r}, \quad y = \frac{b f_x (v_l - o_y)}{f_y (u_l - u_r)}, \quad z = \frac{b f_x}{u_l - u_r}
 \end{align}
-where $b$ is the horizontal baseline, displacement between the camera, $(u_l, v_l)$ are the coordinates of the point in the left image and $(u_r, v_r)$ are the coordinates of the point in the right image.
+where $b$ is the horizontal baseline, i.e.,the displacement between the camera. $(u_l, v_l)$ are the coordinates of the point in the left image and $(u_r, v_r)$ are the coordinates of the point in the right image.
 %--------------------------------------------------------------------------------------------
 
 
