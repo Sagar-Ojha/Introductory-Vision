@@ -22,5 +22,11 @@
         - num_correspondence_points: number of points to consider to compute homography (using least-squared method)
     - *calibrateCamera()* in openCV implements Zhang's method
 
-## Under development
-    As of now, only disparity map can be obtained. Depth estimation is under development.
+## Depth Estimation
+1) Simple Stereo (**[depth_estimation_simple_stereo](./depth_estimation_simple_stereo.py)**)
+    - Running the file generates the disparity map
+    - I downloaded [Left.png](Left.png) and [Right.png](Right.png) from some website that didn't list the camera parameters. So, I can only compute disparity map for these images.
+    - One can compute the depth $D$ of the object/pixel using the disparity. $$D = \frac{b f m_x}{u_l - u_r},$$ where $b$ is the baseline of the set of stereo cameras, $f$ is the focal length of the camera (both cameras are assumed to have the same focal length), and $m_x$ is the pixel density of the image sensor in the $x$ direction, and $(u_l - u_r)$ is the disparity
+
+2) Uncalibrated Stereo (**[depth_estimation_uncalibrated_stereo](./depth_estimation_uncalibrated_stereo.py)**)
+    - Under Development
